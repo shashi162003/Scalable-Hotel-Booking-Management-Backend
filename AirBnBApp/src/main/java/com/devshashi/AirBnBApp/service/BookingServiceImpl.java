@@ -6,11 +6,14 @@ import com.devshashi.AirBnBApp.dto.GuestDTO;
 import com.devshashi.AirBnBApp.entity.*;
 import com.devshashi.AirBnBApp.entity.enums.BookingStatus;
 import com.devshashi.AirBnBApp.exception.ResourceNotFoundException;
+import com.devshashi.AirBnBApp.exception.UnauthorizedException;
 import com.devshashi.AirBnBApp.repository.*;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -88,6 +91,12 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id : " + bookingId));
 
+        User user = getCurrentUser();
+
+        if(!user.equals(booking.getUser())){
+            throw new UnauthorizedException("Booking does not belong to this user with id : " + user.getId());
+        }
+
         if(hasBookingExpired(booking)){
             throw new IllegalStateException("Booking has already expired");
         }
@@ -98,7 +107,7 @@ public class BookingServiceImpl implements BookingService {
 
         for(GuestDTO guestDTO: guestDTOList){
             Guest guest = modelMapper.map(guestDTO, Guest.class);
-            guest.setUser(getCurrentUser());
+            guest.setUser(user);
             Guest savedGuest = guestRepository.save(guest);
             booking.getGuests().add(savedGuest);
         }
@@ -113,8 +122,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public User getCurrentUser(){
-        User user = new User();
-        user.setId(1L);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return user;
     }
 }

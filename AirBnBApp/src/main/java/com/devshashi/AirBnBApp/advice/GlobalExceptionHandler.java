@@ -1,12 +1,15 @@
 package com.devshashi.AirBnBApp.advice;
 
 import com.devshashi.AirBnBApp.exception.ResourceNotFoundException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.security.sasl.AuthenticationException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestControllerAdvice
@@ -19,6 +22,30 @@ public class GlobalExceptionHandler {
         return buildErrorResponseEntity(apiError);
     }
 
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<?>> handleAuthenticationException(AuthenticationException exception){
+        ApiError apiError = new ApiError();
+        apiError.setStatus(HttpStatus.UNAUTHORIZED);
+        apiError.setMessage(exception.getMessage());
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ApiResponse<?>> handleJwtException(JwtException exception){
+        ApiError apiError = new ApiError();
+        apiError.setStatus(HttpStatus.UNAUTHORIZED);
+        apiError.setMessage(exception.getMessage());
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(AccessDeniedException exception){
+        ApiError apiError = new ApiError();
+        apiError.setStatus(HttpStatus.FORBIDDEN);
+        apiError.setMessage(exception.getMessage());
+        return buildErrorResponseEntity(apiError);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleInternalServerError(Exception exception) {
         ApiError apiError = new ApiError();
@@ -26,22 +53,6 @@ public class GlobalExceptionHandler {
         apiError.setMessage(exception.getMessage());
         return buildErrorResponseEntity(apiError);
     }
-
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<ApiResponse<?>> handleInputValidationErrors(MethodArgumentNotValidException exception){
-//        List<String> errors = exception
-//                .getBindingResult()
-//                .getAllErrors()
-//                .stream()
-//                .map(error -> error.getDefaultMessage())
-//                .toList();
-//        ApiError apiError = ApiError.builder()
-//                .status(HttpStatus.BAD_REQUEST)
-//                .message("Input validation failed")
-//                .subErrors(errors)
-//                .build();
-//        return buildErrorResponseEntity(apiError);
-//    }
 
     private ResponseEntity<ApiResponse<?>> buildErrorResponseEntity(ApiError apiError){
         return new ResponseEntity<>(new ApiResponse<>(apiError), apiError.getStatus());
