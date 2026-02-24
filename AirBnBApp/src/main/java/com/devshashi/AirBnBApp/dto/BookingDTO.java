@@ -7,6 +7,7 @@ import com.devshashi.AirBnBApp.entity.User;
 import com.devshashi.AirBnBApp.entity.enums.BookingStatus;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -21,6 +22,7 @@ public class BookingDTO {
     private LocalDateTime updatedAt;
     private BookingStatus bookingStatus;
     private Set<GuestDTO> guests;
+    private BigDecimal amount;
 
     public Long getId() {
         return id;
@@ -84,5 +86,13 @@ public class BookingDTO {
 
     public void setGuests(Set<GuestDTO> guests) {
         this.guests = guests;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
     }
 }

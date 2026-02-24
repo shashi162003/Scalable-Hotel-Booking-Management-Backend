@@ -64,6 +64,9 @@ public class Booking {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
+    @Column(unique = true)
+    private String paymentSessionId;
+
     public Long getId() {
         return id;
     }
@@ -158,5 +161,13 @@ public class Booking {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public String getPaymentSessionId() {
+        return paymentSessionId;
+    }
+
+    public void setPaymentSessionId(String paymentSessionId) {
+        this.paymentSessionId = paymentSessionId;
     }
 }
