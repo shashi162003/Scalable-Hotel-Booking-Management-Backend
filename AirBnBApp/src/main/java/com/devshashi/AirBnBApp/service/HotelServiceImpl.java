@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.devshashi.AirBnBApp.util.AppUtils.getCurrentUser;
+
 @Service
 public class HotelServiceImpl implements HotelService{
     Logger log = LoggerFactory.getLogger(HotelServiceImpl.class);
@@ -112,5 +114,13 @@ public class HotelServiceImpl implements HotelService{
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id : " + hotelId));
         List<RoomDTO> rooms = hotel.getRooms().stream().map((element) -> modelMapper.map(element, RoomDTO.class)).collect(Collectors.toList());
         return new HotelInfoDTO(modelMapper.map(hotel, HotelDTO.class), rooms);
+    }
+
+    @Override
+    public List<HotelDTO> getAllHotels() {
+        User user = getCurrentUser();
+        log.info("Getting all hotels for admin user with ID : " + user.getId());
+        List<Hotel> hotels = hotelRepository.findByOwner(user);
+        return hotels.stream().map((element) -> modelMapper.map(element, HotelDTO.class)).collect(Collectors.toList());
     }
 }

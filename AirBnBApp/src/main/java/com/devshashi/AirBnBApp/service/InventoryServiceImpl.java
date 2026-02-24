@@ -1,24 +1,31 @@
 package com.devshashi.AirBnBApp.service;
 
-import com.devshashi.AirBnBApp.dto.HotelDTO;
-import com.devshashi.AirBnBApp.dto.HotelPriceDTO;
-import com.devshashi.AirBnBApp.dto.HotelSearchRequest;
+import com.devshashi.AirBnBApp.dto.*;
 import com.devshashi.AirBnBApp.entity.Hotel;
 import com.devshashi.AirBnBApp.entity.Inventory;
 import com.devshashi.AirBnBApp.entity.Room;
+import com.devshashi.AirBnBApp.entity.User;
+import com.devshashi.AirBnBApp.exception.ResourceNotFoundException;
 import com.devshashi.AirBnBApp.repository.HotelMinPriceRepository;
 import com.devshashi.AirBnBApp.repository.InventoryRepository;
+import com.devshashi.AirBnBApp.repository.RoomRepository;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.devshashi.AirBnBApp.util.AppUtils.getCurrentUser;
 
 @Service
 public class InventoryServiceImpl implements InventoryService{
@@ -27,11 +34,14 @@ public class InventoryServiceImpl implements InventoryService{
     private final InventoryRepository inventoryRepository;
     private final ModelMapper modelMapper;
     private final HotelMinPriceRepository hotelMinPriceRepository;
+    private final RoomRepository roomRepository;
 
-    public InventoryServiceImpl(InventoryRepository inventoryRepository, ModelMapper modelMapper, HotelMinPriceRepository hotelMinPriceRepository) {
+    public InventoryServiceImpl(InventoryRepository inventoryRepository, ModelMapper modelMapper, HotelMinPriceRepository hotelMinPriceRepository,
+                                RoomRepository roomRepository) {
         this.inventoryRepository = inventoryRepository;
         this.modelMapper = modelMapper;
         this.hotelMinPriceRepository = hotelMinPriceRepository;
+        this.roomRepository = roomRepository;
     }
 
     @Override
@@ -71,5 +81,30 @@ public class InventoryServiceImpl implements InventoryService{
         Page<HotelPriceDTO> hotelPage = hotelMinPriceRepository.findHotelsWithAvailableInventory(hotelSearchRequest.getCity(), hotelSearchRequest.getStartDate(), hotelSearchRequest.getEndDate(), hotelSearchRequest.getRoomsCount(), dateCount, pageable);
 
         return hotelPage;
+    }
+
+    @Override
+    public List<InventoryDTO> getAllInventoryByRoom(Long roomId) {
+        log.info("Getting all inventory by room for room with ID : " + roomId);
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID : " + roomId));
+        User user = getCurrentUser();
+        if(!user.equals(room.getHotel().getOwner())) throw new AccessDeniedException("You are not the owner of the room with ID : " + roomId);
+
+        return inventoryRepository.findByRoomOrderByDate(room).stream().map((element) -> modelMapper.map(element, InventoryDTO.class)).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void updateInventory(Long roomId, UpdateInventoryRequestDTO updateInventoryRequestDTO) {
+        log.info("Updating all inventory by room for room with ID : {} between date range : {} - {}", roomId, updateInventoryRequestDTO.getStartDate(), updateInventoryRequestDTO.getEndDate());
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID : " + roomId));
+        User user = getCurrentUser();
+        if(!user.equals(room.getHotel().getOwner())) throw new AccessDeniedException("You are not the owner of the room with ID : " + roomId);
+
+        inventoryRepository.getInventoryAndLockBeforeUpdate(roomId, updateInventoryRequestDTO.getStartDate(), updateInventoryRequestDTO.getEndDate());
+
+        inventoryRepository.updateInventory(roomId, updateInventoryRequestDTO.getStartDate(), updateInventoryRequestDTO.getEndDate(), updateInventoryRequestDTO.getClosed(), updateInventoryRequestDTO.getSurgeFactor());
     }
 }

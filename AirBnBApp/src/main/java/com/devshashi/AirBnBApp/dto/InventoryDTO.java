@@ -1,7 +1,9 @@
-package com.devshashi.AirBnBApp.entity;
+package com.devshashi.AirBnBApp.dto;
 
+import com.devshashi.AirBnBApp.entity.Hotel;
+import com.devshashi.AirBnBApp.entity.Room;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -9,61 +11,33 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Getter
-@Setter
-@Table(
-        uniqueConstraints = @UniqueConstraint(
-                name = "unique_hotel_room_date",
-                columnNames = {"hotel_id", "room_id", "date"}
-        )
-)
-@Builder
-@AllArgsConstructor
-public class Inventory {
-    public Inventory() {}
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Data
+public class InventoryDTO {
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
-    private Hotel hotel;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
-
-    @Column(nullable = false)
     private LocalDate date;
-
-    @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     private Integer bookedCount;
-
-    @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     private Integer reservedCount;
-
-    @Column(nullable = false)
     private Integer totalCount;
-
-    @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal surgeFactor;
-
-    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price; // basePrice * surgeFactor
-
-    @Column(nullable = false)
-    private String city;
-
-    @Column(nullable = false)
     private Boolean closed;
-
-    @CreationTimestamp
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public InventoryDTO() {}
+
+    public InventoryDTO(Long id, LocalDate date, Integer bookedCount, Integer reservedCount, Integer totalCount, BigDecimal surgeFactor, BigDecimal price, Boolean closed, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.date = date;
+        this.bookedCount = bookedCount;
+        this.reservedCount = reservedCount;
+        this.totalCount = totalCount;
+        this.surgeFactor = surgeFactor;
+        this.price = price;
+        this.closed = closed;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     public Long getId() {
         return id;
@@ -71,22 +45,6 @@ public class Inventory {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Hotel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
-    }
-
-    public Room getRoom() {
-        return room;
-    }
-
-    public void setRoom(Room room) {
-        this.room = room;
     }
 
     public LocalDate getDate() {
@@ -103,6 +61,14 @@ public class Inventory {
 
     public void setBookedCount(Integer bookedCount) {
         this.bookedCount = bookedCount;
+    }
+
+    public Integer getReservedCount() {
+        return reservedCount;
+    }
+
+    public void setReservedCount(Integer reservedCount) {
+        this.reservedCount = reservedCount;
     }
 
     public Integer getTotalCount() {
@@ -129,14 +95,6 @@ public class Inventory {
         this.price = price;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
     public Boolean getClosed() {
         return closed;
     }
@@ -159,13 +117,5 @@ public class Inventory {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Integer getReservedCount() {
-        return reservedCount;
-    }
-
-    public void setReservedCount(Integer reservedCount) {
-        this.reservedCount = reservedCount;
     }
 }
