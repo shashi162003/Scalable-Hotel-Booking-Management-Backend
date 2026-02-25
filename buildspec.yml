@@ -3,11 +3,17 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      java: corretto17
+      java: corretto21
+
+  pre_build:
+    commands:
+      - echo "Using Java version:"
+      - java -version
+      - mvn -v
 
   build:
     commands:
-      - echo "Entering Spring Boot project directory"
+      - echo "Entering AirBnBApp directory"
       - cd AirBnBApp
       - mvn clean package -Dmaven.test.skip=true -Dspring.profiles.active=dev
 
