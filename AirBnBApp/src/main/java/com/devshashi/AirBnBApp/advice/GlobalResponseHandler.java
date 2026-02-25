@@ -24,7 +24,9 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
         boolean isAllowed = allowedRoutes
                 .stream()
                 .anyMatch(route -> request.getURI().getPath().contains(route));
-        if(body instanceof ApiResponse<?> || isAllowed) return body;
+        if (body instanceof ApiResponse<?> || body instanceof String || isAllowed) {
+            return body;
+        }
         return new ApiResponse<>(body);
     }
 }
