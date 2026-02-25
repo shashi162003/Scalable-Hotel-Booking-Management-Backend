@@ -5,20 +5,13 @@ phases:
     runtime-versions:
       java: corretto17
 
-  pre_build:
-    commands:
-      - echo "Starting build for AirBnBApp"
-      - mvn -v
-
   build:
     commands:
-      - mvn clean package -DskipTests
-
-  post_build:
-    commands:
-      - echo "Build completed successfully"
+      - echo "Entering Spring Boot project directory"
+      - cd AirBnBApp
+      - mvn clean package -Dmaven.test.skip=true -Dspring.profiles.active=dev
 
 artifacts:
   files:
-    - target/*.jar
+    - AirBnBApp/target/*.jar
   discard-paths: yes
