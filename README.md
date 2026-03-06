@@ -61,6 +61,10 @@ Every push to the `main` branch triggers a fully automated build and deployment 
 
 🔗 **[http://airbnb-env.eba-tq7y6xxg.ap-south-1.elasticbeanstalk.com/api/v1/swagger-ui/index.html](http://airbnb-env.eba-tq7y6xxg.ap-south-1.elasticbeanstalk.com/api/v1/swagger-ui/index.html)**
 
+## API Walkthrough Video
+
+🔗 **[https://drive.google.com/file/d/1X6wRX-bmVE0L0NFz7qPuPhzGfbddjWD1/view?usp=sharing](https://drive.google.com/file/d/1X6wRX-bmVE0L0NFz7qPuPhzGfbddjWD1/view?usp=sharing)**
+
 ---
 
 ## 📋 Table of Contents
